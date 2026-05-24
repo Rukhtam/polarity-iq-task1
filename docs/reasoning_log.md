@@ -152,6 +152,43 @@ section reads too clean, that's a smell — rewrite.
 
 ---
 
+## Deep-dive picks (3 records): Soros, Rockefeller Capital, Walton Enterprises — 2026-05-24
+
+- **Observed:** Tier-1 enrichment produced a clear signal-yield ranking
+  across 50 candidates. The brutal review's bar for the 3 deep-dive
+  records: prefer FOs where the framework's signals will actually exist.
+- **Assumed:** Picking 3 FOs with the same structure (all registered IAs
+  with linked foundations) would best demonstrate the methodology.
+- **Verified by:** Manual inspection of candidates.csv ranks: Soros and
+  Rockefeller Capital Management each have 14 signals (SEC verified +
+  Foundation verified); Tisch/Loews has 10 but Loews is a public holdco
+  not a pure FO; Walton Enterprises has 9 signals (Foundation verified,
+  SEC not because the family doesn't file Form ADV under "WIT, LLC").
+- **Could be wrong because:** Picking three "easy" cases (all with rich
+  Tier-1 data) under-represents what enrichment looks like when the
+  primary-source pipeline is thin. A reviewer might fairly point out
+  that the deep dives don't showcase how the methodology handles the
+  hard 17 records.
+- **Decision:** Pick **Soros + Rockefeller + Walton**. Why these three
+  specifically:
+  - **Soros** is the pilot canary — full happy path (registered IA +
+    13F + foundation + grants). Tests every domain.
+  - **Rockefeller Capital Management** is the same structure with a
+    different family. Validates the methodology is repeatable.
+  - **Walton Enterprises** is deliberately different: SEC EDGAR is
+    silent on WIT/Walton Enterprises directly (the Waltons don't file
+    Form ADV under that name), but individual Walton heirs file SC 13G
+    against Walmart and the Walton Family Foundation files 990-PF
+    annually. This is the gap case — it tests whether the framework can
+    construct a record when the primary SEC source is absent.
+  Combined coverage: 2 SEC-rich + 1 SEC-silent. Reasonable balance for
+  showing both the happy path and the failure-mode handling. The other
+  17 SEC-silent records' methodology is documented at the methodology.md
+  layer, not chain-by-chain — that's the right level for a Tier-1 cut.
+- **Revision history:** None.
+
+---
+
 ## Seed list curation strategy — Wikipedia as seed citation — 2026-05-24
 
 - **Observed:** When building seeds.yaml I needed a primary-source URL per
