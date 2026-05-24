@@ -1,0 +1,858 @@
+# Polarity IQ — Curated FO Seed List
+#
+# This file is the human-curated discovery layer the brutal review insisted
+# on. Each entry is a candidate family office I found mentioned in a public
+# source. The seed citation is mandatory — it's the provenance for *why*
+# this FO is in our list at all.
+#
+# Schema (per entry):
+#   fo_id              short stable slug (snake_case), used as DB primary key
+#   canonical_name     best guess at the legal entity name
+#   aliases            list of other names this FO appears under
+#   type               SFO | MFO | Trust | Holdco | Unknown
+#   principal_family   surname(s) of the controlling family
+#   hq_city            best-guess city (verified during enrich)
+#   hq_country         country code (US, GB, CH, etc.)
+#   hint_cik           SEC CIK if I already know it (zero-padded 10-digit string)
+#   hint_foundation_ein  9-digit EIN of associated foundation, if I know it
+#   seed_citations     LIST of (source, url) — where I personally found this
+#                      FO mentioned. At least one required.
+#   confidence         my a-priori confidence the FO exists + matches the
+#                      profile, BEFORE curate.py runs verification:
+#                        high   — well documented in major outlets / Wikipedia
+#                        medium — known but coverage is sparse
+#                        low    — I'm relying on a single source
+#   notes              free text
+#
+# Curation rules:
+#   - No FO appears in seeds.yaml without at least one seed_citation pointing
+#     to a public source. Wikipedia is acceptable as a seed citation; primary
+#     sources (SEC, IRS, official site) are added during enrichment.
+#   - hint_cik and hint_foundation_ein are *hints* — curate.py verifies them
+#     against live APIs and either confirms or rejects.
+#   - The seed list is intentionally over-collected (60-80 candidates). The
+#     final 50 are chosen by signal availability AFTER enrichment.
+
+seeds:
+
+  - fo_id: soros_fund_management
+    canonical_name: Soros Fund Management LLC
+    aliases: [SFM, Soros Capital]
+    type: MFO
+    principal_family: Soros
+    hq_city: New York
+    hq_country: US
+    hint_cik: "0001029160"
+    hint_foundation_ein: "263753801"
+    confidence: high
+    seed_citations:
+      - source: SEC EDGAR submissions JSON
+        url: https://data.sec.gov/submissions/CIK0001029160.json
+      - source: ProPublica Nonprofit Explorer
+        url: https://projects.propublica.org/nonprofits/organizations/263753801
+    notes: "Pilot canary. Registered IA, files 13F-HR quarterly."
+
+  # ---- US Single-Family Offices, widely documented ----
+
+  - fo_id: walton_enterprises
+    canonical_name: Walton Enterprises LLC
+    aliases: [WIT LLC, Walton Enterprises Inc, Walton family office]
+    type: SFO
+    principal_family: Walton
+    hq_city: Bentonville
+    hq_country: US
+    hint_cik: null
+    hint_foundation_ein: "133441466"
+    confidence: high
+    seed_citations:
+      - source: Wikipedia — Walton family
+        url: https://en.wikipedia.org/wiki/Walton_family
+      - source: Walton Family Foundation IRS 990-PF (ProPublica)
+        url: https://projects.propublica.org/nonprofits/organizations/133441466
+    notes: "Walton family wealth vehicles. WFF is the linked foundation. SEC filings often appear under individual Walton heirs, not WIT directly."
+
+  - fo_id: cascade_investment
+    canonical_name: Cascade Investment LLC
+    aliases: [Cascade]
+    type: SFO
+    principal_family: Gates
+    hq_city: Kirkland
+    hq_country: US
+    hint_cik: null
+    hint_foundation_ein: "911663695"  # Bill & Melinda Gates Foundation Trust
+    confidence: high
+    seed_citations:
+      - source: Wikipedia — Cascade Investment
+        url: https://en.wikipedia.org/wiki/Cascade_Investment
+      - source: ProPublica — Bill & Melinda Gates Foundation
+        url: https://projects.propublica.org/nonprofits/organizations/911663695
+    notes: "Bill Gates's personal holdings vehicle. Structured to avoid SEC IA registration — see reasoning_log entry on top-down curation."
+
+  - fo_id: iconiq_capital
+    canonical_name: Iconiq Capital LLC
+    aliases: [ICONIQ]
+    type: MFO
+    principal_family: Zuckerberg-Dorsey-Hoffman (founding clients)
+    hq_city: San Francisco
+    hq_country: US
+    hint_cik: null
+    hint_foundation_ein: null
+    confidence: high
+    seed_citations:
+      - source: Wikipedia — Iconiq Capital
+        url: https://en.wikipedia.org/wiki/Iconiq_Capital
+    notes: "Registered IA. Tech-founder-focused MFO. Distinct from Iconiq Growth (their PE/VC arm)."
+
+  - fo_id: vulcan_capital
+    canonical_name: Vulcan Inc
+    aliases: [Vulcan Capital, Vulcan LLC]
+    type: SFO
+    principal_family: Allen
+    hq_city: Seattle
+    hq_country: US
+    hint_cik: null
+    hint_foundation_ein: null
+    confidence: high
+    seed_citations:
+      - source: Wikipedia — Vulcan Inc.
+        url: https://en.wikipedia.org/wiki/Vulcan_Inc.
+    notes: "Paul Allen's estate vehicles, now managed for Allen heirs. Major sports + real estate holdings."
+
+  - fo_id: bdt_msd_partners
+    canonical_name: BDT & MSD Partners LLC
+    aliases: [BDT Capital Partners, MSD Capital, MSD Partners]
+    type: MFO
+    principal_family: Trott-Dell
+    hq_city: Chicago
+    hq_country: US
+    hint_cik: null
+    hint_foundation_ein: null
+    confidence: high
+    seed_citations:
+      - source: Wikipedia — BDT & MSD Partners
+        url: https://en.wikipedia.org/wiki/BDT_%26_MSD_Partners
+    notes: "Merchant bank / MFO. Originated as Byron Trott's BDT Capital, merged with Michael Dell's MSD Capital in 2023."
+
+  - fo_id: pritzker_organization
+    canonical_name: The Pritzker Organization LLC
+    aliases: [TPO, Pritzker Group]
+    type: SFO
+    principal_family: Pritzker
+    hq_city: Chicago
+    hq_country: US
+    hint_cik: null
+    hint_foundation_ein: null
+    confidence: high
+    seed_citations:
+      - source: Wikipedia — Pritzker family
+        url: https://en.wikipedia.org/wiki/Pritzker_family
+    notes: "Hyatt-affiliated Pritzker family holdings. Distinct from Pritzker Group (Tony Pritzker's vehicle) and J.B. Pritzker's separate vehicles."
+
+  - fo_id: rockefeller_capital_management
+    canonical_name: Rockefeller Capital Management LP
+    aliases: [RCM, Rockefeller Family Office]
+    type: MFO
+    principal_family: Rockefeller
+    hq_city: New York
+    hq_country: US
+    hint_cik: "0001739439"
+    hint_foundation_ein: "131659629"  # Rockefeller Foundation
+    confidence: high
+    seed_citations:
+      - source: Wikipedia — Rockefeller Capital Management
+        url: https://en.wikipedia.org/wiki/Rockefeller_Capital_Management
+      - source: SEC EDGAR (Rockefeller Capital Management LP)
+        url: https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=0001739439
+    notes: "Spun out of Rockefeller Family Office in 2018. Registered IA. CEO Greg Fleming (ex-Merrill Lynch)."
+
+  - fo_id: bezos_expeditions
+    canonical_name: Bezos Expeditions LLC
+    aliases: [Bezos Family Office]
+    type: SFO
+    principal_family: Bezos
+    hq_city: Seattle
+    hq_country: US
+    hint_cik: null
+    hint_foundation_ein: null
+    confidence: high
+    seed_citations:
+      - source: Wikipedia — Bezos Expeditions
+        url: https://en.wikipedia.org/wiki/Bezos_Expeditions
+    notes: "Jeff Bezos's personal investment vehicle. Distinct from Day One Fund (philanthropy)."
+
+  - fo_id: willett_advisors
+    canonical_name: Willett Advisors LLC
+    aliases: [Willett]
+    type: SFO
+    principal_family: Bloomberg
+    hq_city: New York
+    hq_country: US
+    hint_cik: null
+    hint_foundation_ein: "205602483"  # Bloomberg Family Foundation
+    confidence: medium
+    seed_citations:
+      - source: Bloomberg Philanthropies — about page
+        url: https://www.bloomberg.org/about/
+      - source: ProPublica — Bloomberg Family Foundation
+        url: https://projects.propublica.org/nonprofits/organizations/205602483
+    notes: "Manages Bloomberg's personal + foundation investments. EIN may need re-verification; multiple Bloomberg-named filers exist."
+
+  # ---- US Family Offices, slightly less public visibility ----
+
+  - fo_id: hillspire
+    canonical_name: Hillspire LLC
+    aliases: [Schmidt Family Office]
+    type: SFO
+    principal_family: Schmidt
+    hq_city: Menlo Park
+    hq_country: US
+    hint_cik: null
+    hint_foundation_ein: "204170342"  # The Schmidt Family Foundation, Palo Alto CA
+    confidence: medium
+    seed_citations:
+      - source: Wikipedia — Eric Schmidt
+        url: https://en.wikipedia.org/wiki/Eric_Schmidt
+      - source: ProPublica — The Schmidt Family Foundation
+        url: https://projects.propublica.org/nonprofits/organizations/204170342
+    notes: "Eric Schmidt's family office. Foundation EIN added 2026-05-24 via ProPublica search."
+
+  - fo_id: dalio_family_office
+    canonical_name: Dalio Family Office LLC
+    aliases: [DFO, Bridgewater family wealth]
+    type: SFO
+    principal_family: Dalio
+    hq_city: Westport
+    hq_country: US
+    hint_cik: null
+    hint_foundation_ein: "431965846"  # Dalio Foundation Inc (verified via ProPublica search 2026-05-24)
+    confidence: medium
+    seed_citations:
+      - source: Wikipedia — Ray Dalio
+        url: https://en.wikipedia.org/wiki/Ray_Dalio
+      - source: ProPublica — Dalio Foundation Inc
+        url: https://projects.propublica.org/nonprofits/organizations/431965846
+    notes: "Separate from Bridgewater Associates. Original EIN hint (474510779) was wrong; corrected via ProPublica search after curate.py flagged it."
+
+  - fo_id: lauder_family
+    canonical_name: Lauder Family Office
+    aliases: [RSL Investments]
+    type: SFO
+    principal_family: Lauder
+    hq_city: New York
+    hq_country: US
+    hint_cik: null
+    hint_foundation_ein: null
+    confidence: medium
+    seed_citations:
+      - source: Wikipedia — Estée Lauder family
+        url: https://en.wikipedia.org/wiki/Est%C3%A9e_Lauder_Companies
+    notes: "Distinguish from the operating company. Ronald Lauder + Leonard Lauder have separate vehicles."
+
+  - fo_id: tisch_family
+    canonical_name: Loews Corporation
+    aliases: [Loews Corp, Tisch family holdings, Tisch family office]
+    type: Holdco
+    principal_family: Tisch
+    hq_city: New York
+    hq_country: US
+    hint_cik: "0000060086"  # Loews Corporation, the family's primary vehicle
+    hint_foundation_ein: null
+    confidence: high
+    seed_citations:
+      - source: Wikipedia — Tisch family
+        url: https://en.wikipedia.org/wiki/Tisch_family
+      - source: SEC EDGAR — Loews Corporation
+        url: https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=0000060086
+    notes: "Loews Corp is the family's primary public holding. Type=Holdco, not pure FO. Canonical name shortened to match SEC's 'LOEWS CORP' registrant name after curate.py flagged a fuzzy-match miss."
+
+  - fo_id: pohlad_companies
+    canonical_name: Pohlad Companies
+    aliases: [Marquette Companies, Pohlad family]
+    type: Holdco
+    principal_family: Pohlad
+    hq_city: Minneapolis
+    hq_country: US
+    hint_cik: null
+    hint_foundation_ein: "411768558"  # Pohlad Family Foundation, Minneapolis MN
+    confidence: medium
+    seed_citations:
+      - source: Wikipedia — Pohlad family
+        url: https://en.wikipedia.org/wiki/Pohlad_family
+      - source: ProPublica — Pohlad Family Foundation
+        url: https://projects.propublica.org/nonprofits/organizations/411768558
+    notes: "Minnesota Twins ownership. Foundation EIN added 2026-05-24 via ProPublica search."
+
+  - fo_id: stephens_group
+    canonical_name: The Stephens Group LLC
+    aliases: [Stephens family office]
+    type: MFO
+    principal_family: Stephens
+    hq_city: Little Rock
+    hq_country: US
+    hint_cik: null
+    hint_foundation_ein: null
+    confidence: medium
+    seed_citations:
+      - source: Wikipedia — Stephens Inc
+        url: https://en.wikipedia.org/wiki/Stephens_Inc.
+    notes: "Distinct from Stephens Inc (the investment bank). MFO arm of the Stephens family."
+
+  - fo_id: ergen_family
+    canonical_name: Charlie Ergen Family Office / EchoStar holdings
+    aliases: [Ergen]
+    type: Holdco
+    principal_family: Ergen
+    hq_city: Englewood
+    hq_country: US
+    hint_cik: null
+    hint_foundation_ein: null
+    confidence: medium
+    seed_citations:
+      - source: Wikipedia — Charlie Ergen
+        url: https://en.wikipedia.org/wiki/Charlie_Ergen
+    notes: "Founder of Dish/EchoStar. Family wealth concentrated in operating companies."
+
+  - fo_id: hostetter_pisces
+    canonical_name: Pisces Inc
+    aliases: [Hostetter family office]
+    type: SFO
+    principal_family: Hostetter
+    hq_city: Boston
+    hq_country: US
+    hint_cik: null
+    hint_foundation_ein: null
+    confidence: low
+    seed_citations:
+      - source: Wikipedia — Amos Hostetter Jr.
+        url: https://en.wikipedia.org/wiki/Amos_Hostetter_Jr.
+    notes: "Amos Hostetter Jr's family office (Continental Cablevision founder). Low public profile."
+
+  # ---- International / European Family Offices ----
+
+  - fo_id: jab_holding
+    canonical_name: JAB Holding Company Sarl
+    aliases: [JAB Holdings, Reimann family office]
+    type: Holdco
+    principal_family: Reimann
+    hq_city: Luxembourg
+    hq_country: LU
+    hint_cik: null
+    hint_foundation_ein: null
+    confidence: high
+    seed_citations:
+      - source: Wikipedia — JAB Holding Company
+        url: https://en.wikipedia.org/wiki/JAB_Holding_Company
+    notes: "Reimann family's primary investment vehicle. Owns Keurig Dr Pepper, JDE Peet's, Pret a Manger, Krispy Kreme, etc."
+
+  - fo_id: pictet_group
+    canonical_name: Pictet Group
+    aliases: [Banque Pictet, Pictet & Cie]
+    type: MFO
+    principal_family: Pictet (and partners)
+    hq_city: Geneva
+    hq_country: CH
+    hint_cik: null
+    hint_foundation_ein: null
+    confidence: high
+    seed_citations:
+      - source: Wikipedia — Pictet Group
+        url: https://en.wikipedia.org/wiki/Pictet_Group
+    notes: "Swiss private bank with deep family-office practice. Partnership structure."
+
+  - fo_id: bregal_investments
+    canonical_name: Bregal Investments
+    aliases: [Brenninkmeijer family office, COFRA]
+    type: SFO
+    principal_family: Brenninkmeijer
+    hq_city: London
+    hq_country: GB
+    hint_cik: null
+    hint_foundation_ein: null
+    confidence: high
+    seed_citations:
+      - source: Wikipedia — Bregal Investments
+        url: https://en.wikipedia.org/wiki/Bregal_Investments
+    notes: "C&A retail-owning Brenninkmeijer family. COFRA Holding is the parent."
+
+  - fo_id: mousse_partners
+    canonical_name: Mousse Partners Limited
+    aliases: [Wertheimer family office]
+    type: SFO
+    principal_family: Wertheimer
+    hq_city: New York / Geneva
+    hq_country: US
+    hint_cik: null
+    hint_foundation_ein: null
+    confidence: low
+    seed_citations:
+      - source: Wikipedia — Wertheimer family
+        url: https://en.wikipedia.org/wiki/Wertheimer_family
+    notes: "Chanel-owning Wertheimer family. Famously private."
+
+  - fo_id: premji_invest
+    canonical_name: Premji Invest
+    aliases: [PremjiInvest]
+    type: SFO
+    principal_family: Premji
+    hq_city: Bangalore
+    hq_country: IN
+    hint_cik: null
+    hint_foundation_ein: null
+    confidence: high
+    seed_citations:
+      - source: Wikipedia — Premji Invest
+        url: https://en.wikipedia.org/wiki/Premji_Invest
+    notes: "Azim Premji's family office. Wipro founder. Large public-equity portfolio in India + selective global PE."
+
+  - fo_id: kirsh_family_office
+    canonical_name: Genii Capital / Kirsh Family Office
+    aliases: [Kirsh Group]
+    type: SFO
+    principal_family: Kirsh
+    hq_city: London
+    hq_country: GB
+    hint_cik: null
+    hint_foundation_ein: null
+    confidence: low
+    seed_citations:
+      - source: Wikipedia — Nathan Kirsh
+        url: https://en.wikipedia.org/wiki/Nathan_Kirsh
+    notes: "South African Kirsh family, Jetro/Restaurant Depot heritage."
+
+  - fo_id: agnelli_exor
+    canonical_name: Exor NV
+    aliases: [Agnelli family office, Giovanni Agnelli BV]
+    type: Holdco
+    principal_family: Agnelli
+    hq_city: Amsterdam
+    hq_country: NL
+    hint_cik: null
+    hint_foundation_ein: null
+    confidence: high
+    seed_citations:
+      - source: Wikipedia — Exor
+        url: https://en.wikipedia.org/wiki/Exor
+    notes: "Agnelli family's public holding. Owns Stellantis stakes, Ferrari, Juventus, etc."
+
+  - fo_id: kamprad_ingka
+    canonical_name: Ingka Group / Interogo Foundation
+    aliases: [Kamprad family, IKEA family office]
+    type: Trust
+    principal_family: Kamprad
+    hq_city: Leiden
+    hq_country: NL
+    hint_cik: null
+    hint_foundation_ein: null
+    confidence: high
+    seed_citations:
+      - source: Wikipedia — Stichting Ingka Foundation
+        url: https://en.wikipedia.org/wiki/Stichting_INGKA_Foundation
+    notes: "Kamprad family / IKEA. Notable Dutch foundation structure rather than classic FO."
+
+  # ---- Major US foundation-style FOs ----
+
+  - fo_id: annenberg_foundation
+    canonical_name: Annenberg Foundation
+    aliases: [Annenberg family office]
+    type: Trust
+    principal_family: Annenberg
+    hq_city: Los Angeles
+    hq_country: US
+    hint_cik: null
+    hint_foundation_ein: "236257083"
+    confidence: high
+    seed_citations:
+      - source: Wikipedia — Annenberg Foundation
+        url: https://en.wikipedia.org/wiki/Annenberg_Foundation
+      - source: ProPublica — Annenberg Foundation
+        url: https://projects.propublica.org/nonprofits/organizations/236257083
+    notes: "Walter Annenberg's foundation, runs significant 990-PF disclosures."
+
+  - fo_id: heinz_endowments
+    canonical_name: The Heinz Endowments
+    aliases: [Heinz family endowments]
+    type: Trust
+    principal_family: Heinz
+    hq_city: Pittsburgh
+    hq_country: US
+    hint_cik: null
+    hint_foundation_ein: "251721100"  # Verified via ProPublica search 2026-05-24
+    confidence: high
+    seed_citations:
+      - source: Wikipedia — The Heinz Endowments
+        url: https://en.wikipedia.org/wiki/The_Heinz_Endowments
+      - source: ProPublica — The Heinz Endowments
+        url: https://projects.propublica.org/nonprofits/organizations/251721100
+    notes: "Heinz family foundations. Original EIN hint (251913803) was wrong; corrected via ProPublica search after curate.py flagged it."
+
+  - fo_id: getty_trust
+    canonical_name: J. Paul Getty Trust
+    aliases: [Getty family, Getty Trust]
+    type: Trust
+    principal_family: Getty
+    hq_city: Los Angeles
+    hq_country: US
+    hint_cik: null
+    hint_foundation_ein: "951790021"
+    confidence: high
+    seed_citations:
+      - source: Wikipedia — J. Paul Getty Trust
+        url: https://en.wikipedia.org/wiki/J._Paul_Getty_Trust
+    notes: "Getty family's main trust. Distinguish from Getty family individual vehicles."
+
+  - fo_id: hewlett_foundation
+    canonical_name: The William and Flora Hewlett Foundation
+    aliases: [Hewlett Foundation]
+    type: Trust
+    principal_family: Hewlett
+    hq_city: Menlo Park
+    hq_country: US
+    hint_cik: null
+    hint_foundation_ein: "941655673"
+    confidence: high
+    seed_citations:
+      - source: Wikipedia — William and Flora Hewlett Foundation
+        url: https://en.wikipedia.org/wiki/William_and_Flora_Hewlett_Foundation
+    notes: "Hewlett family. EIN to verify."
+
+  - fo_id: packard_foundation
+    canonical_name: David and Lucile Packard Foundation
+    aliases: [Packard Foundation]
+    type: Trust
+    principal_family: Packard
+    hq_city: Los Altos
+    hq_country: US
+    hint_cik: null
+    hint_foundation_ein: "942278431"
+    confidence: high
+    seed_citations:
+      - source: Wikipedia — David and Lucile Packard Foundation
+        url: https://en.wikipedia.org/wiki/David_and_Lucile_Packard_Foundation
+    notes: "Packard family. Famous for environmental + ocean philanthropy."
+
+  # ---- Second-pass additions: US family-controlled foundations + trusts ----
+  # All EINs below verified via ProPublica search on 2026-05-24.
+  # See reasoning_log "EIN hints in seeds.yaml are best-guess until ProPublica confirms".
+
+  - fo_id: koch_family
+    canonical_name: Charles Koch Foundation
+    aliases: [Koch family, Koch Industries family]
+    type: SFO
+    principal_family: Koch
+    hq_city: Arlington
+    hq_country: US
+    hint_cik: null
+    hint_foundation_ein: "480918408"
+    confidence: high
+    seed_citations:
+      - source: Wikipedia — Koch family
+        url: https://en.wikipedia.org/wiki/Koch_family
+      - source: ProPublica — Charles Koch Foundation
+        url: https://projects.propublica.org/nonprofits/organizations/480918408
+    notes: "Koch Industries founder/heirs. Foundation is one of several Koch family vehicles."
+
+  - fo_id: mellon_family
+    canonical_name: Andrew W. Mellon Foundation
+    aliases: [Mellon Foundation, Mellon family]
+    type: Trust
+    principal_family: Mellon
+    hq_city: New York
+    hq_country: US
+    hint_cik: null
+    hint_foundation_ein: "131879954"
+    confidence: high
+    seed_citations:
+      - source: Wikipedia — Andrew W. Mellon Foundation
+        url: https://en.wikipedia.org/wiki/Andrew_W._Mellon_Foundation
+      - source: ProPublica — Andrew W Mellon Foundation
+        url: https://projects.propublica.org/nonprofits/organizations/131879954
+    notes: "Andrew Mellon's heir family foundation. Established 1969 via Avalon + Old Dominion merger."
+
+  - fo_id: cargill_family
+    canonical_name: Margaret A. Cargill Foundation
+    aliases: [Cargill family, MacMillan family]
+    type: Trust
+    principal_family: Cargill-MacMillan
+    hq_city: Eden Prairie
+    hq_country: US
+    hint_cik: null
+    hint_foundation_ein: "205434405"
+    confidence: high
+    seed_citations:
+      - source: Wikipedia — Cargill family
+        url: https://en.wikipedia.org/wiki/Cargill,_Incorporated
+      - source: ProPublica — Margaret A Cargill Foundation
+        url: https://projects.propublica.org/nonprofits/organizations/205434405
+    notes: "Cargill agribusiness heir family. Margaret A Cargill Philanthropies is the parent organisation."
+
+  - fo_id: bass_family
+    canonical_name: Bass Foundation
+    aliases: [Bass family, Sid Bass family]
+    type: SFO
+    principal_family: Bass
+    hq_city: Fort Worth
+    hq_country: US
+    hint_cik: null
+    hint_foundation_ein: "756033983"
+    confidence: high
+    seed_citations:
+      - source: Wikipedia — Bass family
+        url: https://en.wikipedia.org/wiki/Bass_family
+      - source: ProPublica — Bass Foundation
+        url: https://projects.propublica.org/nonprofits/organizations/756033983
+    notes: "Texas Bass brothers (Sid, Lee, Robert, Edward). Oil + holdings."
+
+  - fo_id: howard_buffett
+    canonical_name: Howard G. Buffett Foundation
+    aliases: [Howard Buffett family]
+    type: Trust
+    principal_family: Buffett
+    hq_city: Decatur
+    hq_country: US
+    hint_cik: null
+    hint_foundation_ein: "470824756"
+    confidence: high
+    seed_citations:
+      - source: Wikipedia — Howard Graham Buffett
+        url: https://en.wikipedia.org/wiki/Howard_Graham_Buffett
+      - source: ProPublica — Howard G Buffett Foundation
+        url: https://projects.propublica.org/nonprofits/organizations/470824756
+    notes: "Warren Buffett's son's foundation. Distinct from Susan Thompson Buffett Foundation."
+
+  - fo_id: susan_buffett
+    canonical_name: The Susan Thompson Buffett Foundation
+    aliases: [Susan Buffett Foundation, Buffett family foundation]
+    type: Trust
+    principal_family: Buffett
+    hq_city: Omaha
+    hq_country: US
+    hint_cik: null
+    hint_foundation_ein: "476032365"
+    confidence: high
+    seed_citations:
+      - source: Wikipedia — Susan Thompson Buffett
+        url: https://en.wikipedia.org/wiki/Susan_Thompson_Buffett
+      - source: ProPublica — Susan Thompson Buffett Foundation
+        url: https://projects.propublica.org/nonprofits/organizations/476032365
+    notes: "Founded by Warren Buffett's late first wife. Major Berkshire Hathaway-share recipient post-2006 Buffett pledge."
+
+  - fo_id: sergey_brin
+    canonical_name: Sergey Brin Family Foundation
+    aliases: [Brin family]
+    type: SFO
+    principal_family: Brin
+    hq_city: San Francisco
+    hq_country: US
+    hint_cik: null
+    hint_foundation_ein: "472107200"
+    confidence: high
+    seed_citations:
+      - source: Wikipedia — Sergey Brin
+        url: https://en.wikipedia.org/wiki/Sergey_Brin
+      - source: ProPublica — Sergey Brin Family Foundation
+        url: https://projects.propublica.org/nonprofits/organizations/472107200
+    notes: "Google co-founder's personal foundation. Brin-Wojcicki Foundation is a separate joint vehicle (now likely defunct post-divorce)."
+
+  - fo_id: knight_family
+    canonical_name: John S. and James L. Knight Foundation
+    aliases: [Knight Foundation, Knight-Ridder family]
+    type: Trust
+    principal_family: Knight
+    hq_city: Miami
+    hq_country: US
+    hint_cik: null
+    hint_foundation_ein: "650464177"
+    confidence: high
+    seed_citations:
+      - source: Wikipedia — John S. and James L. Knight Foundation
+        url: https://en.wikipedia.org/wiki/John_S._and_James_L._Knight_Foundation
+      - source: ProPublica — John S And James L Knight Foundation
+        url: https://projects.propublica.org/nonprofits/organizations/650464177
+    notes: "Knight Ridder newspaper family. Major media + journalism philanthropy."
+
+  - fo_id: schwab_family
+    canonical_name: Charles and Helen Schwab Foundation
+    aliases: [Schwab family]
+    type: SFO
+    principal_family: Schwab
+    hq_city: San Francisco
+    hq_country: US
+    hint_cik: null
+    hint_foundation_ein: "943374170"
+    confidence: high
+    seed_citations:
+      - source: Wikipedia — Charles R. Schwab
+        url: https://en.wikipedia.org/wiki/Charles_R._Schwab
+      - source: ProPublica — Charles And Helen Schwab Foundation
+        url: https://projects.propublica.org/nonprofits/organizations/943374170
+    notes: "Charles Schwab (brokerage founder) and wife's family foundation. Distinct from Charles Schwab Corporation Foundation."
+
+  - fo_id: lilly_family
+    canonical_name: Lilly Endowment Inc.
+    aliases: [Lilly family]
+    type: Trust
+    principal_family: Lilly
+    hq_city: Indianapolis
+    hq_country: US
+    hint_cik: null
+    hint_foundation_ein: "350868122"
+    confidence: high
+    seed_citations:
+      - source: Wikipedia — Lilly Endowment
+        url: https://en.wikipedia.org/wiki/Lilly_Endowment
+      - source: ProPublica — Lilly Endowment Inc
+        url: https://projects.propublica.org/nonprofits/organizations/350868122
+    notes: "Founded by Eli Lilly family. Largest private foundation in Indiana. Holds large Eli Lilly & Co stock position."
+
+  - fo_id: pew_family
+    canonical_name: The Pew Charitable Trusts
+    aliases: [Pew family]
+    type: Trust
+    principal_family: Pew
+    hq_city: Washington
+    hq_country: US
+    hint_cik: null
+    hint_foundation_ein: "562307147"
+    confidence: high
+    seed_citations:
+      - source: Wikipedia — The Pew Charitable Trusts
+        url: https://en.wikipedia.org/wiki/The_Pew_Charitable_Trusts
+      - source: ProPublica — Pew Charitable Trusts
+        url: https://projects.propublica.org/nonprofits/organizations/562307147
+    notes: "Pew family of Sun Oil Company. Operating as a public charity since 2004 (formerly private foundation)."
+
+  - fo_id: bechtel_family
+    canonical_name: Bechtel Group Foundation
+    aliases: [Bechtel family, Stephen Bechtel family]
+    type: SFO
+    principal_family: Bechtel
+    hq_city: Glendale
+    hq_country: US
+    hint_cik: null
+    hint_foundation_ein: "946078120"
+    confidence: high
+    seed_citations:
+      - source: Wikipedia — Bechtel family
+        url: https://en.wikipedia.org/wiki/Bechtel_Corporation
+      - source: ProPublica — Bechtel Group Foundation
+        url: https://projects.propublica.org/nonprofits/organizations/946078120
+    notes: "Bechtel construction family. Private operating company; family wealth concentrated in Bechtel Corporation."
+
+  - fo_id: hillman_family
+    canonical_name: Hillman Family Foundations
+    aliases: [Henry L. Hillman family, Hillman Company]
+    type: SFO
+    principal_family: Hillman
+    hq_city: Pittsburgh
+    hq_country: US
+    hint_cik: null
+    hint_foundation_ein: "256065959"
+    confidence: high
+    seed_citations:
+      - source: Wikipedia — Henry L. Hillman
+        url: https://en.wikipedia.org/wiki/Henry_L._Hillman
+      - source: ProPublica — Hillman Family Foundations
+        url: https://projects.propublica.org/nonprofits/organizations/256065959
+    notes: "Pittsburgh-based Hillman family. Major Hillman Company family office is the operating wealth vehicle."
+
+  - fo_id: helmsley_family
+    canonical_name: Leona M. and Harry B. Helmsley Charitable Trust
+    aliases: [Helmsley Trust, Helmsley family]
+    type: Trust
+    principal_family: Helmsley
+    hq_city: New York
+    hq_country: US
+    hint_cik: null
+    hint_foundation_ein: "137184401"
+    confidence: high
+    seed_citations:
+      - source: Wikipedia — Helmsley Charitable Trust
+        url: https://en.wikipedia.org/wiki/Helmsley_Charitable_Trust
+      - source: ProPublica — Leona M & Harry B Helmsley Charitable Trust
+        url: https://projects.propublica.org/nonprofits/organizations/137184401
+    notes: "Helmsley hotel/real-estate family. Trust holds substantial real estate + investment portfolio."
+
+  - fo_id: duke_family
+    canonical_name: Doris Duke Charitable Foundation
+    aliases: [Duke family, Doris Duke Foundation]
+    type: Trust
+    principal_family: Duke
+    hq_city: New York
+    hq_country: US
+    hint_cik: null
+    hint_foundation_ein: "137043679"
+    confidence: high
+    seed_citations:
+      - source: Wikipedia — Doris Duke Charitable Foundation
+        url: https://en.wikipedia.org/wiki/Doris_Duke_Charitable_Foundation
+      - source: ProPublica — Doris Duke Charitable Foundation
+        url: https://projects.propublica.org/nonprofits/organizations/137043679
+    notes: "Duke tobacco/utilities family. Doris Duke was the only child of James Buchanan Duke (American Tobacco / Duke Energy)."
+
+  - fo_id: johnson_family
+    canonical_name: Robert Wood Johnson Foundation
+    aliases: [J&J family, Johnson family]
+    type: Trust
+    principal_family: Johnson
+    hq_city: Princeton
+    hq_country: US
+    hint_cik: null
+    hint_foundation_ein: "226029397"
+    confidence: high
+    seed_citations:
+      - source: Wikipedia — Robert Wood Johnson Foundation
+        url: https://en.wikipedia.org/wiki/Robert_Wood_Johnson_Foundation
+      - source: ProPublica — Robert Wood Johnson Foundation
+        url: https://projects.propublica.org/nonprofits/organizations/226029397
+    notes: "Johnson & Johnson founding family. Note: J&J also has a corporate foundation; this is the family vehicle."
+
+  - fo_id: kresge_family
+    canonical_name: The Kresge Foundation
+    aliases: [Kresge family]
+    type: Trust
+    principal_family: Kresge
+    hq_city: Troy
+    hq_country: US
+    hint_cik: null
+    hint_foundation_ein: "381359217"
+    confidence: high
+    seed_citations:
+      - source: Wikipedia — Kresge Foundation
+        url: https://en.wikipedia.org/wiki/Kresge_Foundation
+      - source: ProPublica — Kresge Foundation
+        url: https://projects.propublica.org/nonprofits/organizations/381359217
+    notes: "S.S. Kresge founder family (parent of Kmart). Major Detroit/Michigan philanthropy."
+
+  - fo_id: skoll_family
+    canonical_name: Skoll Foundation
+    aliases: [Jeff Skoll family]
+    type: SFO
+    principal_family: Skoll
+    hq_city: Palo Alto
+    hq_country: US
+    hint_cik: null
+    hint_foundation_ein: "113659133"
+    confidence: high
+    seed_citations:
+      - source: Wikipedia — Jeff Skoll
+        url: https://en.wikipedia.org/wiki/Jeff_Skoll
+      - source: ProPublica — Skoll Foundation
+        url: https://projects.propublica.org/nonprofits/organizations/113659133
+    notes: "eBay's first president Jeff Skoll. Foundation focuses on social entrepreneurship."
+
+  - fo_id: hilton_family
+    canonical_name: Conrad N. Hilton Foundation
+    aliases: [Hilton family]
+    type: Trust
+    principal_family: Hilton
+    hq_city: Westlake Village
+    hq_country: US
+    hint_cik: null
+    hint_foundation_ein: "943100217"
+    confidence: high
+    seed_citations:
+      - source: Wikipedia — Conrad N. Hilton Foundation
+        url: https://en.wikipedia.org/wiki/Conrad_N._Hilton_Foundation
+      - source: ProPublica — Conrad N Hilton Foundation
+        url: https://projects.propublica.org/nonprofits/organizations/943100217
+    notes: "Hilton hotels founding family. Major hospitality + Catholic philanthropy."

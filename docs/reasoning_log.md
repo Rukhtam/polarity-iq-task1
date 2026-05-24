@@ -152,6 +152,58 @@ section reads too clean, that's a smell — rewrite.
 
 ---
 
+## Seed list curation strategy — Wikipedia as seed citation — 2026-05-24
+
+- **Observed:** When building seeds.yaml I needed a primary-source URL per
+  candidate FO. Most of the publicly-named FOs (Cascade, JAB, Agnelli/Exor,
+  Annenberg) don't have a single canonical public list — they're scattered
+  across news articles, Forbes lists, and Wikipedia pages.
+- **Assumed:** A scraping pipeline against FamilyCapital or Highworth
+  listing pages would surface the same 30-40 well-known FOs but in a more
+  uniform format.
+- **Verified by:** Manual check on a sample: FamilyCapital paywalls most
+  list articles past the headline; Highworth's free pages are similarly
+  truncated; Forbes Richest Families lists are accessible but don't link
+  family-to-FO-entity directly. Wikipedia covers the same set of well-known
+  FOs with stable URLs and reasonable bibliographies.
+- **Could be wrong because:** Wikipedia is a tertiary source. Citing it
+  alone risks the "lifted material" originality objection from the rubric.
+- **Decision:** Cite Wikipedia at the *seed* layer (provenance for "why
+  this FO is in our list"), but require curate.py to verify each candidate
+  against a primary source (SEC EDGAR for CIK / filing history,
+  ProPublica for foundation EIN / 990-PF) before the FO can enter the
+  final 50. The enrichment layer's primary-source signals are what
+  defeats the originality objection — the seed is just the discovery hint.
+  Methodology.md will state this explicitly.
+- **Revision history:** None.
+
+---
+
+## EIN hints in seeds.yaml are best-guess until ProPublica confirms — 2026-05-24
+
+- **Observed:** Several seed entries include `hint_foundation_ein` based on
+  my memory or quick lookups (e.g., Walton Family Foundation 13-3441466,
+  Bill & Melinda Gates Foundation 91-1663695).
+- **Assumed:** These EINs are correct because they appear in well-known
+  databases.
+- **Verified by:** No verification yet. They are explicitly hints, not
+  facts. curate.py is responsible for hitting ProPublica with each EIN
+  and either confirming the org name matches the family or rejecting the
+  hint and re-running a name search.
+- **Could be wrong because:** EINs can be cross-confused between related
+  foundations (Bill & Melinda Gates Foundation vs. Bill & Melinda Gates
+  Foundation Trust have different EINs; both are real entities). A
+  well-known wrong EIN is more dangerous than a missing EIN because it
+  silently mislabels the foundation.
+- **Decision:** Treat every `hint_foundation_ein` in seeds.yaml as
+  unverified. curate.py must run a ProPublica `organizations/<ein>.json`
+  check and confirm the returned name semantically matches the seed's
+  `principal_family`. On mismatch: drop the hint, run a name search, log
+  the mismatch in reasoning_log for manual review.
+- **Revision history:** None.
+
+---
+
 ## ProPublica 990-PF lag window — 2026-05-24
 
 - **Observed:** First pilot regression run failed `test_990pf_filed_within_2_years`
