@@ -13,11 +13,18 @@ guard against unbounded OpenAI billing if it ever goes public-facing.
 from __future__ import annotations
 
 import os
+import sys
+from pathlib import Path
+
+# Streamlit runs this file as a top-level script, not as part of the
+# src.rag package, so relative imports break. Add the repo root to
+# sys.path so we can use absolute imports.
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
 
 import streamlit as st
 from dotenv import load_dotenv
 
-from .retriever import answer
+from src.rag.retriever import answer  # noqa: E402  (sys.path tweak above is intentional)
 
 load_dotenv()
 

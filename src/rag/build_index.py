@@ -32,8 +32,8 @@ from google.genai import types
 import chromadb
 from chromadb.config import Settings
 
-from ..db import DB_PATH
-from ..llm import _log_cost  # reuse cost-logging primitive
+from src.db import DB_PATH
+from src.llm import _log_cost  # reuse cost-logging primitive
 
 REPO_ROOT = Path(__file__).resolve().parent.parent.parent
 CHROMA_DIR = REPO_ROOT / "data" / "chromadb"

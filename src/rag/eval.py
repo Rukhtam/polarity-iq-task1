@@ -13,7 +13,7 @@ from __future__ import annotations
 import json
 from dataclasses import dataclass
 
-from .retriever import retrieve
+from src.rag.retriever import retrieve
 
 
 # Each query specifies which fo_ids we expect to see in the top-k results.

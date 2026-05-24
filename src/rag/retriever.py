@@ -23,7 +23,7 @@ from chromadb.config import Settings
 from google import genai
 from google.genai import types
 
-from ..llm import _log_cost
+from src.llm import _log_cost
 
 REPO_ROOT = Path(__file__).resolve().parent.parent.parent
 CHROMA_DIR = REPO_ROOT / "data" / "chromadb"
