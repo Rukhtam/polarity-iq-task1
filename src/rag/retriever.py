@@ -1,14 +1,15 @@
 """Retriever + synthesis. The query → response part of the RAG pipeline.
 
 Flow:
-  1. Embed the query
+  1. Embed the query with Gemini text-embedding-004 (task_type=retrieval_query)
   2. Search ChromaDB for top-k chunks, balanced between fo_profile and signal
   3. Pack chunks into a context string with source attribution
-  4. Call GPT-4o-mini with a system prompt that enforces source-grounded
+  4. Call Gemini 1.5 Flash with a system prompt that enforces source-grounded
      answers (no hallucination beyond the retrieved chunks)
   5. Return the answer + the source citations
 
-No LangChain. Direct openai + chromadb.
+No LangChain. Direct google-generativeai + chromadb. Provider switched
+from OpenAI to Gemini because the user has a Gemini key, not OpenAI.
 """
 
 from __future__ import annotations
@@ -19,15 +20,22 @@ from pathlib import Path
 
 import chromadb
 from chromadb.config import Settings
-from openai import OpenAI
+from google import genai
+from google.genai import types
 
 from ..llm import _log_cost
 
 REPO_ROOT = Path(__file__).resolve().parent.parent.parent
 CHROMA_DIR = REPO_ROOT / "data" / "chromadb"
 COLLECTION_NAME = "polarity_iq"
-EMBEDDING_MODEL = "text-embedding-3-small"
-SYNTHESIS_MODEL = "gpt-4o-mini"
+EMBEDDING_MODEL = "gemini-embedding-001"
+# Flash is the right tier for synthesis: faster, cheaper, and good enough
+# at temperature=0 grounded synthesis. Pro is reserved for the longer
+# unstructured-parsing jobs (990-PF grant extraction, news classification)
+# that we deferred to Tier-3.
+# Note: gemini-1.5-flash returned 404 on this account / API version.
+# gemini-2.5-flash is the supported flash tier on the current v1beta API.
+SYNTHESIS_MODEL = "gemini-2.5-flash"
 
 
 SYSTEM_PROMPT = """You answer questions about family offices using only the
@@ -61,16 +69,17 @@ class AnswerWithSources:
 
 
 # ---------------------------------------------------------------------------
-# Clients (built lazily so tests can run without an OpenAI key)
+# Clients (built lazily so tests can run without an API key)
 # ---------------------------------------------------------------------------
 
-def _openai_client() -> OpenAI:
-    if not os.environ.get("OPENAI_API_KEY"):
+def _gemini_client() -> "genai.Client":
+    key = os.environ.get("GEMINI_API_KEY") or os.environ.get("GOOGLE_API_KEY")
+    if not key:
         raise RuntimeError(
-            "OPENAI_API_KEY not set. Set it in .env (see .env.example) "
+            "GEMINI_API_KEY not set. Add it to .env (see .env.example) "
             "before querying the RAG pipeline."
         )
-    return OpenAI(api_key=os.environ["OPENAI_API_KEY"])
+    return genai.Client(api_key=key)
 
 
 def _chroma_collection():
@@ -97,14 +106,18 @@ def retrieve(query: str, k_per_type: int = 4) -> list[RetrievedChunk]:
     avoids the case where one type dominates the top-k just because the
     embeddings happen to score higher.
     """
-    client = _openai_client()
+    client = _gemini_client()
     coll = _chroma_collection()
 
-    emb = client.embeddings.create(
-        model=EMBEDDING_MODEL, input=[query]
+    # Use RETRIEVAL_QUERY task_type so the query vector lives in the same
+    # semantic space as the indexed RETRIEVAL_DOCUMENT vectors.
+    emb = client.models.embed_content(
+        model=EMBEDDING_MODEL,
+        contents=query,
+        config=types.EmbedContentConfig(task_type="RETRIEVAL_QUERY"),
     )
-    _log_cost(EMBEDDING_MODEL, emb.usage.prompt_tokens, 0, "rag_query_embed")
-    query_vec = emb.data[0].embedding
+    _log_cost(EMBEDDING_MODEL, len(query) // 4, 0, "rag_query_embed")
+    query_vec = emb.embeddings[0].values
 
     results: list[RetrievedChunk] = []
     for type_filter in ("fo_profile", "signal"):
@@ -154,23 +167,26 @@ def answer(query: str, k_per_type: int = 4) -> AnswerWithSources:
             context_parts.append(f"  - {c.text}")
     context = "\n".join(context_parts)
 
-    client = _openai_client()
-    resp = client.chat.completions.create(
+    client = _gemini_client()
+    user_message = f"Context:\n{context}\n\nQuestion: {query}"
+    resp = client.models.generate_content(
         model=SYNTHESIS_MODEL,
-        temperature=0.0,
-        messages=[
-            {"role": "system", "content": SYSTEM_PROMPT},
-            {"role": "user", "content": f"Context:\n{context}\n\nQuestion: {query}"},
-        ],
+        contents=user_message,
+        config=types.GenerateContentConfig(
+            system_instruction=SYSTEM_PROMPT,
+            temperature=0.0,
+        ),
     )
-    _log_cost(
-        SYNTHESIS_MODEL,
-        resp.usage.prompt_tokens,
-        resp.usage.completion_tokens,
-        "rag_query_synthesis",
-    )
+    # Gemini exposes token counts via usage_metadata
+    try:
+        in_tok = resp.usage_metadata.prompt_token_count
+        out_tok = resp.usage_metadata.candidates_token_count
+    except Exception:
+        in_tok = (len(SYSTEM_PROMPT) + len(user_message)) // 4
+        out_tok = len(resp.text) // 4
+    _log_cost(SYNTHESIS_MODEL, in_tok, out_tok, "rag_query_synthesis")
     return AnswerWithSources(
-        answer=resp.choices[0].message.content,
+        answer=resp.text,
         chunks=chunks,
     )
 

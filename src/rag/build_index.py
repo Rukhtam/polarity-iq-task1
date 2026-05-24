@@ -11,6 +11,10 @@ Chunking strategy (per PLAN.md, "Hybrid chunking" decision):
 Both indexed in the same ChromaDB collection. Retriever can do type-
 balanced top-k sampling.
 
+Provider: Google Gemini (text-embedding-004, 768-d). Original draft used
+OpenAI text-embedding-3-small (1536-d); switched because the user has a
+Gemini key, not OpenAI. The choice is documented in reasoning_log.md.
+
 Run:
   python -m src.rag.build_index
 """
@@ -19,9 +23,11 @@ from __future__ import annotations
 
 import json
 import sqlite3
+import time
 from pathlib import Path
 
-from openai import OpenAI
+from google import genai
+from google.genai import types
 
 import chromadb
 from chromadb.config import Settings
@@ -32,7 +38,10 @@ from ..llm import _log_cost  # reuse cost-logging primitive
 REPO_ROOT = Path(__file__).resolve().parent.parent.parent
 CHROMA_DIR = REPO_ROOT / "data" / "chromadb"
 COLLECTION_NAME = "polarity_iq"
-EMBEDDING_MODEL = "text-embedding-3-small"  # 1536 dimensions, cheap
+EMBEDDING_MODEL = "gemini-embedding-001"  # 3072-d. Was text-embedding-004 in the
+                                          # first cut; that name is no longer served
+                                          # on the v1beta API. gemini-embedding-001
+                                          # is the current stable replacement.
 
 
 # ---------------------------------------------------------------------------
@@ -130,14 +139,27 @@ def build_signal_chunk(signal: dict, fo_name: str) -> str:
 
 
 # ---------------------------------------------------------------------------
-# Embedding helper (OpenAI directly — no LangChain)
+# Embedding helper (Gemini directly — no LangChain)
 # ---------------------------------------------------------------------------
 
-def embed_batch(client: OpenAI, texts: list[str]) -> list[list[float]]:
-    """Single batched call to OpenAI embeddings. Returns one vector per text."""
-    resp = client.embeddings.create(model=EMBEDDING_MODEL, input=texts)
-    _log_cost(EMBEDDING_MODEL, resp.usage.prompt_tokens, 0, "rag_build_index")
-    return [d.embedding for d in resp.data]
+def embed_batch(client: "genai.Client", texts: list[str]) -> list[list[float]]:
+    """Embed a batch of texts with Gemini text-embedding-004.
+
+    Uses the new google-genai SDK. task_type=RETRIEVAL_DOCUMENT is the
+    documented mode for chunks going into a vector index (vs
+    RETRIEVAL_QUERY at query time).
+    """
+    resp = client.models.embed_content(
+        model=EMBEDDING_MODEL,
+        contents=texts,
+        config=types.EmbedContentConfig(task_type="RETRIEVAL_DOCUMENT"),
+    )
+    vectors = [e.values for e in resp.embeddings]
+    # Crude token-equivalent for cost logging (text-embedding-004 is free
+    # under generous limits, but we still log volume for the time/effort doc)
+    approx_tokens = sum(len(t) for t in texts) // 4
+    _log_cost(EMBEDDING_MODEL, approx_tokens, 0, "rag_build_index")
+    return vectors
 
 
 # ---------------------------------------------------------------------------
@@ -148,13 +170,16 @@ def main(dry_run: bool = False) -> None:
     import os
     from dotenv import load_dotenv
     load_dotenv()
-    if not dry_run and not os.environ.get("OPENAI_API_KEY"):
-        raise RuntimeError(
-            "OPENAI_API_KEY not set. Set it in .env (see .env.example) "
-            "before running build_index. Or pass --dry-run to inspect "
-            "chunks without embedding."
-        )
-    client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY", "")) if not dry_run else None
+    client = None
+    if not dry_run:
+        key = os.environ.get("GEMINI_API_KEY") or os.environ.get("GOOGLE_API_KEY")
+        if not key:
+            raise RuntimeError(
+                "GEMINI_API_KEY not set. Add it to .env "
+                "(see .env.example). Or pass --dry-run to inspect "
+                "chunks without embedding."
+            )
+        client = genai.Client(api_key=key)
 
     # Read DB
     conn = sqlite3.connect(DB_PATH)
@@ -218,14 +243,29 @@ def main(dry_run: bool = False) -> None:
             print(f"\n  SIGNAL  [{c['metadata']['fo_id']} / {c['metadata']['field']}]:\n    {c['text']}")
         return
 
-    # Embed in batches (OpenAI accepts up to 2048 inputs per call but for
-    # clarity we batch in 100s)
-    BATCH = 100
+    # Embed in batches. Gemini free tier limit is 100 *contents* per
+    # minute (each item in a batch counts separately, not each request).
+    # With 463 chunks we need ~5 minutes minimum. Conservative pacing:
+    # BATCH=10 + sleep 7s = ~85 contents/min, well under 100.
+    BATCH = 10
+    SLEEP_BETWEEN_BATCHES = 7.0
     embeddings: list[list[float]] = []
     for i in range(0, len(chunks), BATCH):
         batch = [c["text"] for c in chunks[i:i + BATCH]]
-        embeddings.extend(embed_batch(client, batch))
+        try:
+            embeddings.extend(embed_batch(client, batch))
+        except Exception as e:
+            # If we hit the rate limit anyway, back off and retry once
+            msg = str(e)
+            if "RESOURCE_EXHAUSTED" in msg or "429" in msg:
+                print(f"  rate limit hit at {i}; sleeping 65s and retrying...")
+                time.sleep(65)
+                embeddings.extend(embed_batch(client, batch))
+            else:
+                raise
         print(f"  embedded {min(i+BATCH, len(chunks))}/{len(chunks)}")
+        if i + BATCH < len(chunks):
+            time.sleep(SLEEP_BETWEEN_BATCHES)
 
     # Chroma persistent store
     CHROMA_DIR.mkdir(parents=True, exist_ok=True)

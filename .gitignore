@@ -10,6 +10,7 @@ data/*.db
 data/*.db-journal
 data/*.xlsx
 data/llm_cost.log
+data/chromadb/
 
 # IDE
 .vscode/

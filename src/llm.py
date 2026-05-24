@@ -30,8 +30,15 @@ COST_LOG = Path(__file__).resolve().parent.parent / "data" / "llm_cost.log"
 COST_LOG.parent.mkdir(parents=True, exist_ok=True)
 
 # USD per 1K tokens. Source: provider pricing pages, May 2026.
+# text-embedding-004: priced per 1K *characters* not tokens, but free on
+# the standard tier within generous limits — we log usage anyway.
 PRICES = {
+    "gemini-2.5-flash":            {"in": 0.000075, "out": 0.0003},
+    "gemini-2.5-pro":              {"in": 0.00125, "out": 0.005},
+    "gemini-embedding-001":        {"in": 0.0,     "out": 0.0},
+    # Legacy / fallback entries
     "gemini-1.5-pro":              {"in": 0.00125, "out": 0.005},
+    "gemini-1.5-flash":            {"in": 0.000075, "out": 0.0003},
     "gpt-4o-mini":                 {"in": 0.00015, "out": 0.0006},
     "text-embedding-3-small":      {"in": 0.00002, "out": 0.0},
 }
@@ -54,15 +61,13 @@ def _log_cost(model: str, in_tokens: int, out_tokens: int, purpose: str) -> floa
 
 
 def gemini_generate(prompt: str, purpose: str, model: str = "gemini-1.5-pro") -> str:
-    """One-shot Gemini text generation."""
-    import google.generativeai as genai
-    key = os.environ.get("GEMINI_API_KEY")
+    """One-shot Gemini text generation. Uses the supported google-genai SDK."""
+    from google import genai
+    key = os.environ.get("GEMINI_API_KEY") or os.environ.get("GOOGLE_API_KEY")
     if not key:
         raise RuntimeError("GEMINI_API_KEY not set")
-    genai.configure(api_key=key)
-    m = genai.GenerativeModel(model)
-    resp = m.generate_content(prompt)
-    # Token accounting (Gemini exposes counts on response metadata)
+    client = genai.Client(api_key=key)
+    resp = client.models.generate_content(model=model, contents=prompt)
     try:
         in_tok = resp.usage_metadata.prompt_token_count
         out_tok = resp.usage_metadata.candidates_token_count

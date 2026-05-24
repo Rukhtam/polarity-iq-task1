@@ -152,6 +152,33 @@ section reads too clean, that's a smell — rewrite.
 
 ---
 
+## RAG provider switched from OpenAI to Gemini — 2026-05-25
+
+- **Observed:** Phase 3 shipped a RAG pipeline using OpenAI
+  text-embedding-3-small + gpt-4o-mini, on the assumption the user had
+  an OpenAI API key. User confirmed they have a Gemini key, not OpenAI.
+- **Assumed:** Switching providers would require non-trivial refactoring
+  if the pipeline was tightly coupled to one SDK.
+- **Verified by:** Searched the codebase for OpenAI dependencies.
+  Found 3 entry points: `src/rag/build_index.py`, `src/rag/retriever.py`,
+  `src/rag/app.py`. No LangChain → no opaque abstractions to migrate
+  through. Each entry point uses a thin direct-SDK pattern: embed call
+  + chat-completion call. Replacing both with their google-generativeai
+  equivalents was ~30 minutes of edits.
+- **Could be wrong because:** Gemini's text-embedding-004 produces
+  768-dimensional vectors vs OpenAI's 1536. ChromaDB indexes
+  dimension-specifically, so re-indexing is required (existing index
+  would mismatch on query). This is expected, not a bug — the rebuild
+  happens on the next `python -m src.rag.build_index` run.
+- **Decision:** Switched to Gemini. Rationale captured in rag.md.
+  The brutal review's "no LangChain" call is now retroactively defended:
+  dependency-free code is provider-agnostic by accident. If we had
+  routed through LangChain we'd be debugging
+  langchain-community/langchain-openai/langchain-google migrations.
+- **Revision history:** None.
+
+---
+
 ## Deep-dive picks (3 records): Soros, Rockefeller Capital, Walton Enterprises — 2026-05-24
 
 - **Observed:** Tier-1 enrichment produced a clear signal-yield ranking

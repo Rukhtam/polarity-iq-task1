@@ -39,10 +39,10 @@ MAX_QUERIES = 20
 # Sidebar: status + sample queries
 with st.sidebar:
     st.markdown("### Status")
-    if os.environ.get("OPENAI_API_KEY"):
-        st.success("OpenAI key configured.")
+    if os.environ.get("GEMINI_API_KEY") or os.environ.get("GOOGLE_API_KEY"):
+        st.success("Gemini key configured.")
     else:
-        st.error("OPENAI_API_KEY not set — queries will fail.")
+        st.error("GEMINI_API_KEY not set — queries will fail.")
     st.markdown(f"**Queries this session:** {st.session_state.query_count}/{MAX_QUERIES}")
     st.markdown("---")
     st.markdown("### Sample queries")
