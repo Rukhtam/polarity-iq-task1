@@ -1,0 +1,17 @@
+.env
+.venv/
+venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# Data artifacts — keep schema, never commit live data
+data/*.db
+data/*.db-journal
+data/*.xlsx
+data/llm_cost.log
+
+# IDE
+.vscode/
+.idea/
+.DS_Store
