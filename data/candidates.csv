@@ -1,0 +1,2 @@
+fo_id,canonical_name,type,hq_address,hq_city,hq_country,sec_cik,foundation_ein,seed_source,seed_source_url,extracted_at,notes
+soros_fund_management,Soros Fund Management LLC,MFO,"250 West 55th Street, Floor 29",New York NY 10019,US,0001029160,26-3753801,SEC EDGAR submissions JSON,https://data.sec.gov/submissions/CIK0001029160.json,2026-05-24,"Pilot canary. Files 13F-HR quarterly. Foundation To Promote Open Society (OSF network) 990-PF filed at 224 W 57th St NYC. CEO Dawn Fitzpatrick since 2017 (LinkedIn verification pending in enrich)."

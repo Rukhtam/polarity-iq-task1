@@ -152,6 +152,33 @@ section reads too clean, that's a smell — rewrite.
 
 ---
 
+## ProPublica 990-PF lag window — 2026-05-24
+
+- **Observed:** First pilot regression run failed `test_990pf_filed_within_2_years`
+  for Soros's linked foundation. ProPublica returns 2023 as the latest tax
+  year, today is 2026-05-24. Test threshold of 2 years was wrong.
+- **Assumed:** ProPublica indexes 990-PF filings within ~12 months of the
+  reporting tax year.
+- **Verified by:** Manual check of ProPublica's data pipeline notes
+  (https://projects.propublica.org/nonprofits/) confirms they pull from IRS
+  publicly-released images. IRS itself lags 12-18 months after the tax year
+  ends, and ProPublica adds another 3-6 months of indexing lag. So a typical
+  query in mid-year N will see at best year N-2 as the latest available.
+- **Could be wrong because:** Some foundations e-file early and IRS releases
+  faster; some get indexed within 6 months. The lag is a worst-case envelope,
+  not a uniform delay. But for a freshness assertion in a regression test,
+  you need the envelope.
+- **Decision:** Relax test threshold to 3 tax years. Document inline in the
+  test docstring so anyone reading the test sees the reasoning without
+  digging through the log. Note: this does *not* relax the production
+  freshness rule for the soft-power field — the rule table in
+  score_and_export.py treats "most recent 990-PF filing" as
+  authoritative-by-definition (there is no fresher source), not as a
+  staleness flag.
+- **Revision history:** None.
+
+---
+
 ## Originality defence sits in enrichment, not seed — 2026-05-03
 
 - **Observed:** Rubric says "Your dataset must contain entirely original
